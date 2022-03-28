@@ -1,0 +1,34 @@
+INSTALL NGINX AND NOTIFICATION
+
+---
+- name: install nginx
+  hosts: all
+  become: true
+  vars:
+  - gmail_password: !vault |
+        $ANSIBLE_VAULT;1.1;AES256
+        35643761333539343436373939663635373034313836323633653531326238326533323564306638
+        6131323935643865643365326139653166353730633630390a306165343538303666373738303534
+        30303465363433666333373032623635666436393436633534333439366161353435303162313632
+        3662333633396233620a643964313066313466363436613232363361613235656662346637656134
+        39313462623864353131383863396662393731316638626463313332653662636535
+  tasks:
+  - name: install nginx
+    yum:
+      name: nginx
+      state: present
+
+  - name: start nginx
+    service: 
+      name: nginx
+      state: started
+      
+  - name: ansible-notify
+    mail:
+       host: smtp.gmail.com
+       port: 587
+       username: vijaym0055@gmail.com
+       password: "{{ gmail_password }}"
+       to: vijaytrigger5555@gmail.com
+       subject: Ansible-report
+       body: "Nginx installation completed"

@@ -1,0 +1,700 @@
+===>Download Oracle Virtual Box ------https://www.virtualbox.org/wiki/Downloads
+
+===>download CentOS ------------------https://www.osboxes.org/centos/
+
+setup centos===>Go to VBox->New -> name:centos-template , linux , othersx64bit -> memory size (2 GB) -> Hard disk (existing file) choose the centos image file -> Create
+
+Right click on centos template->  settings -> system - processor (2 CPU) -> Network (change to bridge adapter)
+
+Right click ->start -> normal start ===>system will get start ===>user password will be in osboxes.org in [info]
+
+open putty ->osboxes@192.168.225.44
+
+create clone for { ansible-controller , ansible-target1 , ansible-target2 (need to choose generate new mac address) }
+
+	yum install ansible -----in ANSIBLE-CONTROLLER
+	ansible --version
+---------------------------------------------------------------------------------------------------------------------
+Failed to download metadata for repo ‘AppStream’ [CentOS]
+	cd /etc/yum.repos.d/
+	sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+	sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+	yum update -y
+----------------------------------------------------------------------------------------------------------------------
+======================================================================================================================
+ANSIBLE INVENTORY
+
+ #defines the hosts and groups of hosts upon which commands, modules, and tasks in a playbook operate.
+ #Common formats include INI and YAML.
+
+YAML===yet another markup language
+INI====inventory
+
+config inventory in ansible ----it can work with one or multiple systems in your infrastructure at a same time
+
+inventory file --it is simple a no of server listed one after the other 
+
+               --you can have multiple groups defined in a single inventory file
+
+inventory location =====/etc/ansible/hosts
+
+server1.company.com
+server2.company.com
+
+[mail]
+server3.company.com
+server4.company.com
+
+[db]
+server5.company.com
+server6.company.com
+
+[web]
+server7.company.com
+server8.company.com
+
+INVENTORY PARAMETER:
+
+ansible_host --------it is an inventory parameter used to specify the FQDN(fully qualified domain name) or IP Address of a server
+ansible_connection --ssh(linux)/winrm(window)/localhost (ansible connect to target server)
+ansible_port --------22/5986 (
+ansible_user --------root/administrator (remote connection and by default it is set to route for linux machines) 
+ansible_ssh_pass ----Password (storing passwd)
+
+SECURITY: ansible vault
+==================================================================================================================================================
+--------------------------------------------------------------------------------------------------------------------------------------------------
+DEMO INVENTORY: [to connect it remote check https://github.com/mrroadrash55/ansible-notes]
+
+     mkdir test-project
+     cd test-project
+     vim inventory.txt
+ target1 ansible_host=ec2-user@10.0.1.111 ansible_ssh_pass=vijay
+     ansible target1 -m ping -i inventory.txt
+     [IT SHOULD SHOW SUCCESS]
+     
+[SAME LIKE TARGET2  =if it shows an error GO TO=> vi /etc/ansible/ansible.conf]
+===================================================================================================================================================
+---------------------------------------------------------------------------------------------------------------------------------------------------
+YAML = yet another markup language
+
+Ansible playbooks are text files or conf file that are written in yaml format.
+YAML is represented as DATA , in this case CONFIGURATION DATA
+
+KEY VALUE PAIR
+--------------
+Fruit: Apple (it must have space b/w : and apple)
+
+ARRAY/LIST
+-----------
+Fruits:
+- Orange
+- Apple
+- banana
+(- it indicates an elements of an array)
+
+DICTIONARY/MAP
+--------------
+A dictionary is a set of properties grouped together under an item
+
+Banana:
+    Fat: 5g
+    Clories: 102
+(you must have equal no of blank spaces before a property of an single item
+
+KEY VALUE/DICTIONARY/LISTS
+--------------------------
+     -  Banana:
+            Calories: 105
+            Fat: 0.4g
+            Carb: 16g
+------------------------------------------------------------------------------------------------------------------------------------
+====================================================================================================================================
+ANSIBLE PLAYBOOK
+
+A set of Instructions you provide Ansible to work its magic
+
+PLAY is a set of activities to be run on a single a group of hosts
+
+PLAYBOOK FORMAT
+
+Playbook is a list of dictionaries in YAML terms.
+
+Each play is a dictionary has a set of properties called name, post, and tasks.
+
+
+
+HOSTS
+
+host parameter indicates which hosts you want these operation to run on
+
+MODULE
+
+ the different actions run by tasks are called modules.in case command script,YAML ,service are ansible module
+
+
+RUN
+
+=>Execute Ansible Playbook
+=>Syntax: ansible-playbook<playbook file name>
+eg:ansible-playbook playbook.yml
+   ansible-playbook --help
+===========================================================================================================================================
+-------------------------------------------------------------------------------------------------------------------------------------------
+DEMO
+
+ANSIBLE							ANSIBLE-PLAYBOOK
+
+-> ansible <hosts> -a <command>                         ansible-playbook <playbook name>
+-> ansible all -a "/sbin/reboot"                        eg:ansible-playbook playbook-webserver.yml
+-> ansible <hosts> -m <module>                  
+-> ansible target1 -m ping                         
+
+--->ansible all -m(module) ping -i(inventory) inventory.txts
+
+ANSIBLE-PLAYBOOK
+
+create vi test.yml
+-
+  name: connecting target
+  hosts: all
+  tasks: 
+    - name: ping test
+      ping:
+
+---->ansible-playbook test.yml -i hosts
+ 
+----------------------------------------------------------------------------------------------
+EXERCISE:
+  -
+    name: 'Stop the web services on web server nodes'
+    hosts: web_nodes
+    tasks:
+        -
+            name: 'Stop the web services on web server nodes'
+            command: 'service httpd stop'
+-
+    name: 'Shutdown the database services on db server nodes'
+    hosts: db_nodes
+    tasks:
+        -
+            name: 'Shutdown the database services on db server nodes'
+            command: 'service mysql stop'
+-
+    name: 'Restart all servers (web and db) at once'
+    hosts: all_nodes
+    tasks:
+        -
+            name: 'Restart all servers (web and db) at once'
+            command: '/sbin/shutdown -r'
+-
+    name: 'Start the database services on db server nodes'
+    hosts: db_nodes
+    tasks:
+        -
+            name: 'Start the database services on db server nodes'
+            command: 'service mysql start'
+-
+    name: 'Start the web services on web server nodes'
+    hosts: web_nodes
+    tasks:
+        -
+            name: 'Start the web services on web server nodes'
+            command: 'service httpd start'
+--------------------------------------------------------------------------------------------------------
+========================================================================================================
+ANSIBLE MODULE
+
+=>System ------start,restart,stop
+-user
+-group
+-hostname
+-iptables
+-lvg
+-lvol
+-make
+-mount
+-ping
+-timezone
+-systemd
+-service
+
+=>Commands ---script
+-command
+-expect
+-raw
+-script
+-shell
+
+=>Files
+-retrieve Acl information
+-archieve
+-copy
+-file
+-find
+-lineinfile
+-replace
+-stat
+-template
+-unarchive
+
+=>Database ---to add or remove database
+
+=>Cloud --- creating and destoring the instances, performing configuration changes in networking and security and lot more
+
+=>Windows
+-win_copy
+-win_command
+-win_domain
+-win_file
+-win_iis_website
+-win_msg
+-win_msi
+-win_package
+-win_ping
+-win_path
+-win_shell
+etc
+
+-----------------------------------------------
+SCRIPT: 
+  playbook.yml
+-
+  name: play 1
+  hosts: localhost
+  tasks:
+    - name: Run a script on remote server
+      script: /some/local/script.sh -arg1 -arg2
+------------------------------------------------
+SERVICE:
+  => Manage Services - Start,Stop,Restart
+
+playbook.yml
+
+-
+ name: start service in order
+ hosts: localhost
+ tasks:
+   - name: start the database service
+     service: name=postgresql state=started
+
+   - name: start the httpd service
+     service: name=httpd state=started
+   
+   - name: start the nginx service
+     service:
+       name: nginx
+       state: started
+
+started,stopped and restarted
+-------------------------------------------------
+lineinfile
+
+->Search for a line in a file and replace it or add it if it doesn't exit.
+
+/etc/resolv.conf
+nameserver 10.1.250.10
+
+
+need to implement in dns server
+
+PLAYBOOK:
+- 
+ name: add DNS server to resolv.conf
+ hosts: localhost
+ tasks:
+   - lineinfile:
+        path: /etc/resolv.conf
+        line: nameserver 10.1.250.10
+---------------------------------------------------
+SCRIPT.SH
+#sample script
+
+echo "nameserver 10.1.250.10" >> /etc/resolv.conf
+--------------------------------------------------
+EXAMPLE:
+
+-
+    name: 'Execute a script on all web server nodes and start httpd service'
+    hosts: web_nodes
+    tasks:
+        -
+            name: 'Update entry into /etc/resolv.conf'
+            lineinfile:
+                path: /etc/resolv.conf
+                line: 'nameserver 10.1.250.10'
+        -
+            name: 'Execute a script'
+            script: /tmp/install_script.sh
+        -
+            name: 'Start httpd service'
+            service:
+                name: httpd
+                state: present
+-----------------------------------------------------------------------------------------
+Example:
+
+-
+    name: 'Execute a script on all web server nodes and start httpd service'
+    hosts: web_nodes
+    tasks:
+        -
+            name: 'Update entry into /etc/resolv.conf'
+            lineinfile:
+                path: /etc/resolv.conf
+                line: 'nameserver 10.1.250.10'
+        -
+            name: 'Create a new user'
+            user:
+                name: web_user
+                uid: 1040
+                group: developers
+        -
+            name: 'Execute a script'
+            script: /tmp/install_script.sh
+        -
+            name: 'Start httpd service'
+            service:
+                name: httpd
+                state: present
+------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
+ANSIBLE VARIABLE:
+
+{{  }} ----jinja2 template
+
+
+VARIABLE:
+ ->Stores information that varies with each host
+
+PLAYBOOK.yml
+-
+  name: add DNS server to resolv.conf
+  hosts: localhost
+  vars:
+    dns_server: 10.1.250.10
+  tasks:
+     - lineinfile:
+          path: /etc/resolv.conf
+          line: nameserver 10.1.250.10 =====to use variable 10.1.250.10 insteadof this type {{ dns_server }}
+--------------------------------------------------------------------------
+{{ http_port }} ----we should define like this
+
+in futhure #sample variable file -web.yml  ----we can change the port easyly
+
+http_port: 8081
+----------------------------------------------------------------------------
+
+EXAMPLE:
+
+-
+    hosts: localhost
+    vars:
+        car_model: 'BMW M3'
+        country_name: USA
+        title: 'Systems Engineer'
+    tasks:
+        -
+            command: 'echo "My car''s model is {{ car_model }}"'
+        -
+            command: 'echo "I live in the {{ country_name }}"'
+        -
+            command: 'echo "I work as a {{ title }}"'
+------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
+ANSIBLE CONDITIONALS
+
+----WHEN CONDITION----------------------------
+
+- name: install nginx
+  hosts:all
+  tasks:
+  - name: install nginx on debian
+    apt:
+     name: nginx
+     state: present
+    when: ansible_os_family == "Debian" 
+
+  - name: install nginx
+    yum:
+     name: nginx
+     state: present
+    when: ansible_os_family == "redhat" 
+
+-------AND & OR--------------------------------  
+
+- name: install nginx
+  hosts:all
+  tasks:
+  - name: install nginx on debian
+    apt:
+     name: nginx
+     state: present
+    when: ansible_os_family == "Debian" and ansible_distribution_version == "16.04"
+
+  - name: install nginx
+    yum:
+     name: nginx
+     state: present
+    when: ansible_os_family == "redhat" or ansible_os_family == "SUSE"
+
+------CONDITIONALS IN LOOP------------------------------------------
+
+
+- name: Install Softwares
+  hosts: all
+  vars:
+   packages:
+    - name: nginx
+      required: True
+    - name: mysql
+      required : True
+    - name: apache
+      required : False
+  tasks:
+  - name: Install e: Install “{{ item.name }}” on Debian
+    apt:
+      name: "{{ item.name }}"
+      state: present
+
+    when: item.required == true
+    loop: "{{ packages }}
+
+-----CONDITIONALS & REGISTER-----------------------------
+
+- name: Check status of a service and email if its down
+  hosts: localhost
+  tasks:
+   - command: service httpd status
+     register: result
+   - mail:
+     to: admin@company.com
+     subject: Service Alert
+     body: Httpd Service is down
+ 
+     when: result.stdout.find('down') != -1
+---------------------------------------------------------
+
+EXAMPLE:
+
+command or shell can be used
+
+-
+    name: 'Add name server entry if not already entered'
+    hosts: localhost
+    tasks:
+        -
+            shell: 'cat /etc/resolv.conf'
+            register: command_output
+        -
+            shell: 'echo "nameserver 10.0.250.10" >> /etc/resolv.conf'
+            when: 'command_output.stdout.find("10.0.250.10") == -1'
+
+-------------------------------------------------------------------------------------------------------------------------------
+===============================================================================================================================
+
+LOOPS (with_items)
+
+loop is an array of an  string value
+-------------------------------------------
+-
+   name: Create users
+   hosts: localhost
+   tasks:
+    - user: name={{ item }} state=present uid= {{ item.
+      loop:
+       	- joe
+	- george
+	- ravi
+	- mani
+	- kiran
+	- jazlan
+	- emaan
+	- mazin
+	- izaan
+	- mike
+	- menaal
+	- shoeb
+	- rani
+-----------------------------------------------
+{{ item.name }}
+-
+   name: Create users
+   hosts: localhost
+   tasks:
+    - user: name={{ item.name }} state=present uid={{ item.uid }}
+      loop:
+        - name: joe
+	  uid: 1010
+	- name: ram
+	  uid: 1011
+	- name: sha
+	  uid: 1015
+	- name: chu
+	  uid: 1017
+
+------------------------------------------------
+in olden ---with_items:
+now --------loop
+
+advantage of with_* [with_{plugin}]
+---------------------------------
+EXAMPLE of with_*:
+
+-
+  name: Create users
+  hosts: localhost
+  tasks:
+   - user: name={{ item }} state=present
+     with_items:
+	- joe
+	- george
+	- ravi
+	- mani
+-----------------------------------
+with_*
+
+
+with_items
+with_file
+with_url
+with_mongodb
+with_dict
+with_etcd
+with_env
+with_filetree
+With_ini
+With_inventory_hostnames
+With_k8s
+With_manifold
+With_nested
+With_nios
+With_openshift
+With_password
+With_pipe
+With_rabbitm
+
+
+-
+    name: 'Install required packages'
+    hosts: localhost
+    vars:
+        packages:
+            - httpd
+            - binutils
+            - glibc
+            - ksh
+            - libaio
+            - libXext
+            - gcc
+            - make
+            - sysstat
+            - unixODBC
+            - mongodb
+            - nodejs
+            - grunt
+    tasks:
+        -
+            yum:
+                name: '{{ item }}'
+                state: present
+            with_items: '{{ packages }}'
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+=====================================================================================================================================================================
+ROLES
+
+the primary purpose of roles ,to make your work reusable 
+
+GO TO ANSIBLE GALAXY ----ansible-galaxy init mysql
+
+
+default location: roles_path= /etc/ansible/roles
+          
+to find and search role : ansible-galaxy search mysql
+
+to install role : ansible-galaxy install (role)
+
+example:
+
+-
+ name: install and config mysql
+ hosts: db_server
+ roles:
+   - geerlingguy.mysql
+
+
+to list roles : ansible-galaxy list
+
+to check ansible config : ansible-config dump | grep ROLE
+
+to save in current path directory : ansible-galaxy geerlingguy.mysql -p ./roles  (-p denotes the current directory)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+=========================================================================================================================================================================
+
+ADVANCED TOPICS
+
+windows machine only act as a target 
+
+in control machine install---pip install pywinrm
+
+ANSIBLE-GALAXY
+
+ansible-galaxy is a free site downloading, sharing and writing  all kind of community developed ansible-role galaxy.ansible.com 
+
+PATTERN
+
+An Ansible pattern can refer to a single host, an IP address, an inventory group, a set of groups, or all hosts in your inventory.
+
+ansible <pattern> -m <module_name> -a "<module options>"
+
+example:
+ansible webservers -m service -a "name=httpd state=restarted"
+
+DYNAMIC INVENTORY
+
+ansible-playbook -i inventory.txt playbook.yml
+
+ansible-playbook -i inventory.py(python) playbook.yml
+
+
+CUSTOM MODULE
+
+it is developed from python
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================================================================== 
+COMMANDS
+
+ansible-playbook -C(to check) hosts.yml   ------------to check yaml
+
+IN TARGET MACHINE:
+
+sudo visudo
+   ##Allow root to run any commands
+   root ALL=(ALL)  ALL
+-->ansadmin ALL=(ALL) NOPASSWD: ALL
+
+TO check user last login:
+
+su - ansadmin
+
+TO RUN ansible-playbook
+
+ansible-playbook -i hosts xyz.yml
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

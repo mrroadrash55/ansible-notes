@@ -32,3 +32,5 @@ INSTALL NGINX AND NOTIFICATION
        to: vijaytrigger5555@gmail.com
        subject: Ansible-report
        body: "Nginx installation completed"
+OUTPUT:
+ansible-playbook nginx.yml -i hosts --ask-vault-pass

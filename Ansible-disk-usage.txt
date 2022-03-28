@@ -1,0 +1,11 @@
+- name: Check Disk Space Usage and Memory Usage
+hosts: all
+tasks:
+- name: Disk usage from command module
+shell: df -h
+register: sto
+- debug: var=sto.stdout_lines
+- name: Memory Usage
+shell: free -m
+register: storage
+- debug: var=storage.stdout_lines

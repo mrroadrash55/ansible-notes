@@ -1,0 +1,33 @@
+INSTALL JAVA:
+
+---
+- name: install java
+  hosts: all
+  become: true
+  vars:
+    - gmail_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          38663637363534326361373264613564336163366265623333313131346564343231356263333739
+          6133633662326234326164393830656135343663336232310a643265373134643964393963666331
+          37626466356137376636633133633831646334303065323337653537313833616431633731356133
+          6561393731616666390a343435656139356431396365323039376165393830613437633234313366
+          34653961393335653734306539363035643837386636303065336134356138373238
+
+  tasks:
+    - name: install java
+      yum:
+        name: java-1.8.0-openjdk
+        state: present
+  {{- name: setting default java   ------------------------------------------------------------(target)check: sudo alternatives --config java 
+      alternatives:                                                                             
+        link: /usr/bin/java                                                                        
+        path: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-2.el8_5.x86_64/jre/bin/java }}------if there is one or more java version give this (setting default java)
+    - name: ansible-notify
+      mail:
+        host: smtp.gmail.com
+        port: 587
+        username: vijaym0055@gmail.com
+        password: "{{ gmail_password }}"
+        to: vijaytrigger5555@gmail.com
+        subject: Ansible-report
+        body: "JAVA installation completed"

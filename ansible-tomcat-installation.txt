@@ -1,0 +1,24 @@
+INSTALL TOMCAT
+
+    - name: Downloading tomcat
+      get_url:
+          url: "https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.77/bin/apache-tomcat-8.5.77.tar.gz"
+          dest: /opt/
+    - name: extracting tomcat
+      unarchive:
+           src: /opt/apache-tomcat-8.5.77.tar.gz
+           dest: /opt
+           remote_src: yes
+    - name: Renaming tomcat home
+      command: mv /opt/apache-tomcat-8.5.77 /opt/tomcat
+    - name: Starting tomcat
+      shell: nohup /opt/tomcat/bin/startup.sh
+    - name: ansible-notify
+      mail:
+        host: smtp.gmail.com
+        port: 587
+        username: vijaym0055@gmail.com
+        password: "{{ gmail_password }}"
+        to: vijaytrigger5555@gmail.com
+        subject: Ansible-report
+        body: "tomcat installation completed"

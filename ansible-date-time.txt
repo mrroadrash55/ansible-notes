@@ -1,0 +1,10 @@
+---
+- name: date and time
+  hosts: localhost
+  tasks:
+  - name: Date
+    debug:
+     var=ansible_date_time.date
+  - name: Time
+    debug:
+     var=ansible_date_time.time

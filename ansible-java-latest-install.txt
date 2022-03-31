@@ -1,0 +1,28 @@
+ - name: install java
+      yum:
+        name: java-* -y
+        state: latest
+    - name: setting default java
+      alternatives:
+        link: /usr/bin/java
+        path: /usr/lib/jvm/{{ packages }}/jre/bin/java
+
+
+
+
+---
+- name: java latest
+  hosts: all
+  become: true
+  tasks:
+    - name: update package repo
+      yum:
+        update_cache: yes
+    - name: install java
+      become: yes
+      yum:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+           - java-*

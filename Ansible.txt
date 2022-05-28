@@ -12,7 +12,7 @@ open putty ->osboxes@192.168.225.44
 
 create clone for { ansible-controller , ansible-target1 , ansible-target2 (need to choose generate new mac address) }
 
-	yum install ansible -----in ANSIBLE-CONTROLLER
+	sudo dnf install ansible -----in ANSIBLE-CONTROLLER
 	ansible --version
 ---------------------------------------------------------------------------------------------------------------------
 Failed to download metadata for repo ‘AppStream’ [CentOS]
